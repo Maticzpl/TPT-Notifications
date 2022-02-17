@@ -52,8 +52,6 @@ function MaticzplNotifications.DrawMenuContent()
     gfx.fillRect(418,250,193,156,   0,0,0)
     gfx.drawRect(418,250,193,156,   255,255,255)
 
-
-
     --Exit button
     local exitIsHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 250 and mouseY < 250 + 12 and notif.windowOpen
     if exitIsHovering then
@@ -258,6 +256,7 @@ function MaticzplNotifications.AddNotification(message,title,saveID)
 end
 
 -- Draws the red circle notification button. Called every frame
+local timerfornot = 255 -- Blinking not. dot
 function MaticzplNotifications.DrawNotifications()
     local number = #notif.notifications
 
@@ -277,9 +276,15 @@ function MaticzplNotifications.DrawNotifications()
     if notif.hoveringOnButton then
         brig = 80
     end
-
-    gfx.fillCircle(posX,posY,6,6,120,brig,brig)
-    gfx.fillCircle(posX,posY,5,5,255,brig,brig)  
+	if timerfornot > 0 then
+	timerfornot = timerfornot - 2
+	elseif timerfornot <= 0 then
+	timerfornot = 255
+	end
+	--Dim the username when showing notifications
+    gfx.fillRect(507,409,70,13,0,0,0,150)
+    gfx.fillRect(posX,posY,6,6,120,brig,brig,timerfornot)
+    gfx.fillRect(posX,posY,5,5,255,brig,brig,timerfornot)  
     gfx.drawText(posX + 1 -(w / 2),posY + 2 -(h / 2),number,255,255,255)
 end
 
