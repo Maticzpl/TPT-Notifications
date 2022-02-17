@@ -1,11 +1,18 @@
+-- Prevent multiple instances of the script running and choose the newer one
+if MaticzplNotifications ~= nil and MaticzplNotifications.version > 1 then
+    return
+end
+
 MaticzplNotifications = {
     lastTimeChecked = nil,
     request = nil,
+    FPrequest = nil,
     saveCache = {},
     notifications = {},
     hoveringOnButton = false,
     windowOpen = false,
     scrolled = 0,
+    version = 1
 }
 
 local json = {}
@@ -145,11 +152,12 @@ function MaticzplNotifications.CheckForChanges()
     local name = tpt.get_name()
     if name ~= "" then                 
         notif.request = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=user%3A"..name)
+        notif.FPrequest = http.get("https://powdertoy.co.uk/Browse.json")
     end 
 end
 
 -- Called when recieved response from teh server after calling CheckForUpdates()
-function MaticzplNotifications.WhenCheck(response)
+function MaticzplNotifications.OnResponse(response,fpresponse)
     local function split (input, sep)
         if sep == nil then
             sep = "%s"
@@ -161,17 +169,38 @@ function MaticzplNotifications.WhenCheck(response)
         return t
     end
 
-    local saves = json.parse(response).Saves
+    
+    local saves, success = pcall(function() return json.parse(response).Saves end)
+    if not success then 
+        print("Error fetching saves from server. Try again later") 
+        return
+    end
+
+    local fp,success = pcall(function() return json.parse(fpresponse).Saves end)
+    if not success then 
+        print("Error fetching FP from server. Try again later")         
+        return
+    end
+
     if notif.saveCache ~= nil then
-        for i, save in ipairs(saves) do
+        for _, save in ipairs(saves) do
+            local isFP = 0
+            for _, fpSave in pairs(fp) do
+                if fpSave.ID == save.ID then
+                    isFP = 1
+                end
+            end
+            save.FP = isFP
+
             local cached = notif.saveCache[save.ID]
             if cached == nil then
                 local saved = MANAGER.getsetting("MaticzplNotifications",""..save.ID)
                 if saved == nil then
                     notif.saveCache[save.ID] = {}
-                    notif.saveCache[save.ID].ScoreUp = 0
-                    notif.saveCache[save.ID].ScoreDown = 0
-                    notif.saveCache[save.ID].Comments = 0    
+                    notif.saveCache[save.ID].ScoreUp = save.ScoreUp
+                    notif.saveCache[save.ID].ScoreDown = save.ScoreDown
+                    notif.saveCache[save.ID].Comments = save.Comments    
+                    notif.saveCache[save.ID].FP = 0--isFP
                     cached = notif.saveCache[save.ID]                
                 else
                     local saved = split(saved,"|")
@@ -179,10 +208,18 @@ function MaticzplNotifications.WhenCheck(response)
                     notif.saveCache[save.ID].ScoreUp = saved[2]
                     notif.saveCache[save.ID].ScoreDown = saved[3]
                     notif.saveCache[save.ID].Comments = saved[4]
+                    notif.saveCache[save.ID].FP = saved[5]
                     cached = notif.saveCache[save.ID]
                 end
             end
 
+            if isFP ~= cached.FP then
+                if isFP == 1 then
+                    notif.AddNotification("This save is now on FP!!!",save.ShortName,save.ID)   
+                else                    
+                    notif.AddNotification("This save went off FP.",   save.ShortName,save.ID)  
+                end            
+            end
             local new = save.ScoreUp - cached.ScoreUp
             if new ~= 0 then
                 notif.AddNotification(new.." new Upvotes!\x0F\1\255\1\238\129\139",save.ShortName,save.ID)            
@@ -248,7 +285,7 @@ end
 function MaticzplNotifications.SaveToString(save)
     local separator = "|"
 
-    return save.ID..separator..save.ScoreUp..separator..save.ScoreDown..separator..save.Comments
+    return save.ID..separator..save.ScoreUp..separator..save.ScoreDown..separator..save.Comments..separator..save.FP
 end
 
 
@@ -291,12 +328,13 @@ function MaticzplNotifications.Tick()
         notif.CheckForChanges()
     end
 
-    if notif.request ~= nil and notif.request:status() == "done" then
-        notif.WhenCheck(notif.request:finish())
+    if notif.request ~= nil and notif.request:status() == "done" and notif.FPrequest ~= nil and notif.request:status() == "done" then
+        notif.OnResponse(notif.request:finish(),notif.FPrequest:finish())
         notif.request = nil
-        
-        MANAGER.savesetting("MaticzplNotifications","lastTime",notif.lastTimeChecked)    
+        notif.FPrequest = nil
+        MANAGER.savesetting("MaticzplNotifications","lastTime",notif.lastTimeChecked)                    
     end
+
 
     notif.DrawNotifications()
 
