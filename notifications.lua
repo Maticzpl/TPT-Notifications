@@ -152,7 +152,7 @@ function MaticzplNotifications.CheckForChanges()
     local name = tpt.get_name()
     if name ~= "" then                 
         notif.request = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=user%3A"..name)
-        notif.FPrequest = http.get("https://powdertoy.co.uk/Browse.json")
+        notif.FPrequest = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=16")
     end 
 end
 
@@ -168,29 +168,31 @@ function MaticzplNotifications.OnResponse(response,fpresponse)
         end
         return t
     end
-
     
-    local saves, success = pcall(function() return json.parse(response).Saves end)
-    if not success then 
-        print("Error fetching saves from server. Try again later") 
+    local success, saves = pcall(json.parse,response  )
+    if not success then
+        print("Error while fetching saves from server. Try again later")
+        --tpt.set_clipboard(response)
         return
     end
-
-    local fp,success = pcall(function() return json.parse(fpresponse).Saves end)
-    if not success then 
-        print("Error fetching FP from server. Try again later")         
+    local success, fp  =   pcall(json.parse,fpresponse)
+    if not success then
+        print("Error while fetching saves from server. Try again later")
+        --tpt.set_clipboard(fpresponse)
         return
     end
+    saves = saves.Saves
+    fp = fp.Saves
 
     if notif.saveCache ~= nil then
-        for _, save in ipairs(saves) do
+        for i, save in pairs(saves) do
             local isFP = 0
             for _, fpSave in pairs(fp) do
                 if fpSave.ID == save.ID then
                     isFP = 1
                 end
             end
-            save.FP = isFP
+            saves[i].FP = isFP
 
             local cached = notif.saveCache[save.ID]
             if cached == nil then
@@ -200,7 +202,7 @@ function MaticzplNotifications.OnResponse(response,fpresponse)
                     notif.saveCache[save.ID].ScoreUp = save.ScoreUp
                     notif.saveCache[save.ID].ScoreDown = save.ScoreDown
                     notif.saveCache[save.ID].Comments = save.Comments    
-                    notif.saveCache[save.ID].FP = 0--isFP
+                    notif.saveCache[save.ID].FP = isFP
                     cached = notif.saveCache[save.ID]                
                 else
                     local saved = split(saved,"|")
@@ -213,10 +215,12 @@ function MaticzplNotifications.OnResponse(response,fpresponse)
                 end
             end
 
-            if isFP ~= cached.FP then
+            if tonumber(isFP) ~= tonumber(cached.FP) then
+                --print(isFP, cached.FP,type(isFP),type(cached.FP))
                 if isFP == 1 then
                     notif.AddNotification("This save is now on FP!!!",save.ShortName,save.ID)   
-                else                    
+                end 
+                if cached.FP == 1 then                
                     notif.AddNotification("This save went off FP.",   save.ShortName,save.ID)  
                 end            
             end
