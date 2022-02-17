@@ -172,13 +172,11 @@ function MaticzplNotifications.OnResponse(response,fpresponse)
     local success, saves = pcall(json.parse,response  )
     if not success then
         print("Error while fetching saves from server. Try again later")
-        --tpt.set_clipboard(response)
         return
     end
     local success, fp  =   pcall(json.parse,fpresponse)
     if not success then
         print("Error while fetching saves from server. Try again later")
-        --tpt.set_clipboard(fpresponse)
         return
     end
     saves = saves.Saves
@@ -332,7 +330,7 @@ function MaticzplNotifications.Tick()
         notif.CheckForChanges()
     end
 
-    if notif.request ~= nil and notif.request:status() == "done" and notif.FPrequest ~= nil and notif.request:status() == "done" then
+    if notif.request ~= nil and notif.request:status() == "done" and notif.FPrequest ~= nil and notif.FPrequest:status() == "done" then
         notif.OnResponse(notif.request:finish(),notif.FPrequest:finish())
         notif.request = nil
         notif.FPrequest = nil
