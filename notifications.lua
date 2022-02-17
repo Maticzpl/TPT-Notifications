@@ -281,10 +281,10 @@ function MaticzplNotifications.DrawNotifications()
 	elseif timerfornot <= 0 then
 	timerfornot = 255
 	end
-	--Dim the username when showing notifications
+	--Dimmen the username when showing notifications
     gfx.fillRect(507,409,70,13,0,0,0,150)
-    gfx.fillRect(posX,posY,6,6,120,brig,brig,timerfornot)
-    gfx.fillRect(posX,posY,5,5,255,brig,brig,timerfornot)  
+    gfx.fillCircle(posX,posY,6,6,120,brig,brig,timerfornot)
+    gfx.fillCircle(posX,posY,5,5,255,brig,brig,timerfornot)
     gfx.drawText(posX + 1 -(w / 2),posY + 2 -(h / 2),number,255,255,255)
 end
 
