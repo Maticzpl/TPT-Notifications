@@ -125,9 +125,15 @@ function MaticzplNotifications.DrawMenuContent()
         
         local next = notif.notifications[i+1]
         if next == nil or next.title ~= title then
-            if mouseX > 418 + 12 and mouseX < 418 + 193 and mouseY > lastTitleY and mouseY < y and mouseY > 250 and mouseY < 250 + 155 then
+            if mouseX > 418 + 12 and mouseX < 418 + 193 and mouseY > lastTitleY and mouseY < y and mouseY > 250 and mouseY < 250 + 156 then
+                
                 local boxY = math.max(lastTitleY-1,251)
-                gfx.drawRect(418 + 12,boxY,193 - 13,math.min(y - lastTitleY-1,boxY - 251 + 154))
+                local height = math.min(y - boxY - 2,boxY + 155 - 253)
+                if height + boxY > 404 then --this is confusing
+                    height = height - (height + boxY - 404)
+                end
+                gfx.drawRect(418 + 12,boxY,193 - 13,height)
+                
                 if justClicked then
                     local removing = i
                     while notif.notifications[removing].title == title do
@@ -154,9 +160,6 @@ function MaticzplNotifications.DrawMenuContent()
     if exitIsHovering and justClicked then        
         notif.windowOpen = false
         notif.SaveNotifications()
-       -- for id, value in pairs(notif.saveCache) do
-        --    MANAGER.savesetting("MaticzplNotifications",id,notif.SaveToString(value))      
-        --end    
         return false
     end    
     if readAllHovering and justClicked then      
