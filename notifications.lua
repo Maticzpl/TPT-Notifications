@@ -278,10 +278,14 @@ local timerfornot = 255 -- Blinking not. dot
 function MaticzplNotifications.DrawNotifications()
     local number = #notif.notifications
 
+    if number > 99 then
+       number = "99"
+    end
+    
     local posX = 572
     local posY = 415
     if tpt.version.jacob1s_mod ~= nil then
-        posX = 585
+        posX = 580
     end
 
     local w,h = gfx.textSize(number)
@@ -312,6 +316,7 @@ function MaticzplNotifications.DrawNotifications()
     gfx.fillCircle(posX,posY,5,5,255,brig,brig,timerfornot)
     gfx.drawText(posX + 1 -(w / 2),posY + 2 -(h / 2),number,255,255,255)
 end
+
 
 -- Used for saving current state of saves
 function MaticzplNotifications.SaveToString(save)
