@@ -259,15 +259,17 @@ end
 local timerfornot = 255 -- Blinking not. dot
 function MaticzplNotifications.DrawNotifications()
     local number = #notif.notifications
-
     if number == 0 then
         return
     end
-
-    local posX = 572
+    if number > 99 then
+       number = "99+"
+    end
+	
+    local posX = 567
     local posY = 415
     if tpt.version.jacob1s_mod ~= nil then
-        posX = 585
+        posX = 580
     end
 
     local w,h = gfx.textSize(number)
@@ -276,17 +278,13 @@ function MaticzplNotifications.DrawNotifications()
     if notif.hoveringOnButton then
         brig = 80
     end
-	if timerfornot > 0 then
-	timerfornot = timerfornot - 2
-	elseif timerfornot <= 0 then
-	timerfornot = 255
-	end
 	--Dimmen the username when showing notifications
-    gfx.fillRect(507,409,70,13,0,0,0,150)
-    gfx.fillCircle(posX,posY,6,6,120,brig,brig,timerfornot)
-    gfx.fillCircle(posX,posY,5,5,255,brig,brig,timerfornot)
-    gfx.drawText(posX + 1 -(w / 2),posY + 2 -(h / 2),number,255,255,255)
+    gfx.fillRect(507,409,70,13,0,0,0,220)
+    gfx.fillRect(posX-10,posY-5,21,11,120,brig,brig,timerfornot-50)
+    gfx.drawRect(posX-10,posY-5,21,11,255,brig,brig,timerfornot)
+    gfx.drawText(posX + 1 -(w / 2),posY + 2 -(h / 2),number,255,255,255,timerfornot)
 end
+
 
 -- Used for saving current state of saves
 function MaticzplNotifications.SaveToString(save)
