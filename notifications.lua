@@ -6,6 +6,7 @@ end
 MaticzplNotifications = {
     lastTimeChecked = nil,
     request = nil,
+    byDateRequest = nil,
     FPrequest = nil,
     saveCache = {},
     notifications = {},
@@ -148,14 +149,15 @@ end
 -- Called automatically every 10 minutes
 function MaticzplNotifications.CheckForChanges()
     local name = tpt.get_name()
-    if name ~= "" then                 
+    if name ~= "" then          
+        notif.byDateRequest = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=sort%3Adate user%3A"..name)
         notif.request = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=user%3A"..name)
         notif.FPrequest = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=16")
     end 
 end
 
 -- Called when recieved response from teh server after calling CheckForUpdates()
-function MaticzplNotifications.OnResponse(response,fpresponse)
+function MaticzplNotifications.OnResponse(response,fpresponse,byDateResponse)
     local function split (input, sep)
         if sep == nil then
             sep = "%s"
@@ -167,7 +169,12 @@ function MaticzplNotifications.OnResponse(response,fpresponse)
         return t
     end
     
-    local success, saves = pcall(json.parse,response  )
+    local success, savesVotes = pcall(json.parse,response  )
+    if not success then
+        print("Error while fetching saves from server. Try again later")
+        return
+    end
+    local success, savesDate = pcall(json.parse,byDateResponse  )
     if not success then
         print("Error while fetching saves from server. Try again later")
         return
@@ -177,18 +184,30 @@ function MaticzplNotifications.OnResponse(response,fpresponse)
         print("Error while fetching saves from server. Try again later")
         return
     end
-    saves = saves.Saves
+
+    savesVotes = savesVotes.Saves
+    savesDate = savesDate.Saves
     fp = fp.Saves
 
+    -- Combine saves by date and by votes in a set
+    local saves = {}
+    for k, v in pairs(savesVotes) do
+        saves[v.ID] = v
+    end
+    for k, v in pairs(savesDate) do
+        saves[v.ID] = v
+    end
+
+
     if notif.saveCache ~= nil then
-        for i, save in pairs(saves) do
+        for id, save in pairs(saves) do
             local isFP = 0
             for _, fpSave in pairs(fp) do
                 if fpSave.ID == save.ID then
                     isFP = 1
                 end
             end
-            saves[i].FP = isFP
+            saves[id].FP = isFP
 
             local cached = notif.saveCache[save.ID]
             if cached == nil then
@@ -212,7 +231,6 @@ function MaticzplNotifications.OnResponse(response,fpresponse)
             end
 
             if tonumber(isFP) ~= tonumber(cached.FP) then
-                --print(isFP, cached.FP,type(isFP),type(cached.FP))
                 if tonumber(isFP) == 1 then
                     notif.AddNotification("This save is now on FP!!!",save.ShortName,save.ID)   
                 end 
@@ -260,10 +278,6 @@ local timerfornot = 255 -- Blinking not. dot
 function MaticzplNotifications.DrawNotifications()
     local number = #notif.notifications
 
-    if number == 0 then
-        return
-    end
-
     local posX = 572
     local posY = 415
     if tpt.version.jacob1s_mod ~= nil then
@@ -272,17 +286,28 @@ function MaticzplNotifications.DrawNotifications()
 
     local w,h = gfx.textSize(number)
 
+    local nw,nh = gfx.textSize(tpt.get_name())
+    
+    if nw > 58 then
+        gfx.fillRect(507,409,72,13,0,0,0,150)            
+    end
+    if number == 0 then
+        gfx.fillCircle(posX,posY,5,5,50,50,50)
+        gfx.fillCircle(posX,posY,4,4,60,60,60)
+        gfx.drawText(posX + 1 -(w / 2),posY + 2 -(h / 2),number,128,128,128)
+        return
+    end
+
     local brig = 0
     if notif.hoveringOnButton then
         brig = 80
     end
 	if timerfornot > 0 then
-	timerfornot = timerfornot - 2
+	    timerfornot = timerfornot - 2
 	elseif timerfornot <= 0 then
-	timerfornot = 255
+	    timerfornot = 255
 	end
 	--Dimmen the username when showing notifications
-    gfx.fillRect(507,409,70,13,0,0,0,150)
     gfx.fillCircle(posX,posY,6,6,120,brig,brig,timerfornot)
     gfx.fillCircle(posX,posY,5,5,255,brig,brig,timerfornot)
     gfx.drawText(posX + 1 -(w / 2),posY + 2 -(h / 2),number,255,255,255)
@@ -335,10 +360,14 @@ function MaticzplNotifications.Tick()
         notif.CheckForChanges()
     end
 
-    if notif.request ~= nil and notif.request:status() == "done" and notif.FPrequest ~= nil and notif.FPrequest:status() == "done" then
-        notif.OnResponse(notif.request:finish(),notif.FPrequest:finish())
+    if notif.request ~= nil        and notif.request:status()          == "done" and 
+       notif.FPrequest ~= nil      and notif.FPrequest:status()        == "done" and
+       notif.byDateRequest ~= nil  and notif.byDateRequest:status()    == "done" then
+
+        notif.OnResponse(notif.request:finish(),notif.FPrequest:finish(),notif.byDateRequest:finish())
         notif.request = nil
         notif.FPrequest = nil
+        notif.byDateRequest = nil
         MANAGER.savesetting("MaticzplNotifications","lastTime",notif.lastTimeChecked)                    
     end
 
