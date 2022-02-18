@@ -213,10 +213,10 @@ function MaticzplNotifications.OnResponse(response,fpresponse)
 
             if tonumber(isFP) ~= tonumber(cached.FP) then
                 --print(isFP, cached.FP,type(isFP),type(cached.FP))
-                if isFP == 1 then
+                if tonumber(isFP) == 1 then
                     notif.AddNotification("This save is now on FP!!!",save.ShortName,save.ID)   
                 end 
-                if cached.FP == 1 then                
+                if tonumber(cached.FP) == 1 then                
                     notif.AddNotification("This save went off FP.",   save.ShortName,save.ID)  
                 end            
             end
