@@ -34,10 +34,10 @@ function MaticzplNotifications.DrawMenuContent()
     end
     local function click(x,y,button)
         -- inside window
-        if x > 418 and y > 250 and x < 418 + 193 and y < 250 + 156 and notif.windowOpen then
+        if x > 418 and y > 250 and x < 418 + 193 and y < 250 + 155 and notif.windowOpen then
             justClicked = true
             
-            if x > 418 and x < 418 + 12 and y > 261 and y < 250 + 156 then
+            if x > 418 and x < 418 + 12 and y > 261 and y < 250 + 155 then
                 holdingScroll = true
             end
             return false
@@ -50,8 +50,8 @@ function MaticzplNotifications.DrawMenuContent()
     
     
     --Window
-    gfx.fillRect(418,250,193,156,   0,0,0)
-    gfx.drawRect(418,250,193,156,   255,255,255)
+    gfx.fillRect(418,250,193,155,   0,0,0)
+    gfx.drawRect(418,250,193,155,   255,255,255)
     
     --Exit button
     local exitIsHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 250 and mouseY < 250 + 12 and notif.windowOpen
@@ -60,14 +60,23 @@ function MaticzplNotifications.DrawMenuContent()
     end
     gfx.drawRect(418,250,12,12,     255,255,255)
     gfx.drawText(418+3,250+2,"X")
+
+    --Read All button
+    local readAllHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 261 and mouseY < 261 + 12 and notif.windowOpen
+    if readAllHovering then
+        gfx.fillRect(418,261,12,12, 128,128,128)        
+    end
+    gfx.drawRect(418,261,12,12,     255,255,255)
+    gfx.drawText(418+4,261+2,"A")
     
     --Scroll Bar
-    local scrollFieldHeight = 250 + 156 - 263
-    local barRatio = math.min(1 - (scrollLimit * -5 / 156),1)
+    local scrollY = 275
+    local scrollFieldHeight = 250 + 155 - scrollY
+    local barRatio = math.min(1 - (scrollLimit * -5 / 155),1)
     local barHeight = math.max(scrollFieldHeight * barRatio,10)
-    if holdingScroll and barHeight < 141 then
+    if holdingScroll and barHeight + scrollY ~= 404 and scrollLimit ~= 0 then
         -- Wolfram alpha saved me here xd
-        notif.scrolled = - ((scrollLimit*(mouseY - (263 + barHeight / 2))) / (barHeight - 141))
+        notif.scrolled = (scrollLimit*(-(mouseY - barHeight/2) + scrollY - 1)) / (barHeight + scrollY - 404)
     end
     
     if notif.scrolled > 0 then
@@ -78,14 +87,14 @@ function MaticzplNotifications.DrawMenuContent()
     end
     if scrollLimit ~= 0 then      
         local scrollFraction = notif.scrolled / scrollLimit
-        local barPos = 263 + ((250 + 154 - barHeight - 263) * scrollFraction)
+        local barPos = scrollY + ((250 + 154 - barHeight - scrollY) * scrollFraction) - 1
         gfx.fillRect(420,barPos,8,barHeight, 128,128,128)    
     else
-        gfx.fillRect(420,263,8,156 - 15, 128,128,128)    
+        gfx.fillRect(420,scrollY - 1,8,155 - 26, 128,128,128)    
     end    
     
     --Vertical line
-    gfx.drawLine(418+11,250,418+11,250 + 155)
+    gfx.drawLine(418+11,250,418+11,250 + 154)
     
     local y = 252 + notif.scrolled * 5
     local lastTitleY = y
@@ -100,7 +109,7 @@ function MaticzplNotifications.DrawMenuContent()
         --Group title
         if prev == nil or prev.title ~= title then
             lastTitleY = y
-            if y >= 252 and y <= 250+156 - 10 then         
+            if y >= 252 and y <= 250+155 - 10 then         
                 gfx.drawLine(418+12,y - 2,418 + 192,y - 2)     
                 gfx.drawText(418+15,y,title)
             end
@@ -108,7 +117,7 @@ function MaticzplNotifications.DrawMenuContent()
             y = y + sy
         end
         --Message
-        if y >= 252 and y <= 250+156 - 10 then         
+        if y >= 252 and y <= 250+155 - 10 then         
             gfx.drawText(418+22,y,msg,200,200,200)    
         end    
         local sx,sy = gfx.textSize(msg)
@@ -116,10 +125,19 @@ function MaticzplNotifications.DrawMenuContent()
         
         local next = notif.notifications[i+1]
         if next == nil or next.title ~= title then
-            if mouseX > 418 + 12 and mouseX < 418 + 193 and mouseY > lastTitleY and mouseY < y and mouseY > 250 and mouseY < 250 + 156 then
+            if mouseX > 418 + 12 and mouseX < 418 + 193 and mouseY > lastTitleY and mouseY < y and mouseY > 250 and mouseY < 250 + 155 then
                 local boxY = math.max(lastTitleY-1,251)
                 gfx.drawRect(418 + 12,boxY,193 - 13,math.min(y - lastTitleY-1,boxY - 251 + 154))
                 if justClicked then
+                    local removing = i
+                    while notif.notifications[removing].title == title do
+                        table.remove(notif.notifications,removing)    
+                        removing = removing - 1
+                        if notif.notifications[removing] == nil then
+                            break
+                        end
+                    end
+                    
                     sim.loadSave(saveID)
                 end
             end
@@ -135,11 +153,15 @@ function MaticzplNotifications.DrawMenuContent()
     
     if exitIsHovering and justClicked then        
         notif.windowOpen = false
+        notif.SaveNotifications()
+       -- for id, value in pairs(notif.saveCache) do
+        --    MANAGER.savesetting("MaticzplNotifications",id,notif.SaveToString(value))      
+        --end    
+        return false
+    end    
+    if readAllHovering and justClicked then      
         notif.notifications = {} 
         notif.SaveNotifications()
-        for id, value in pairs(notif.saveCache) do
-            MANAGER.savesetting("MaticzplNotifications",id,notif.SaveToString(value))      
-        end    
         return false
     end    
     justClicked = false
@@ -217,14 +239,17 @@ function MaticzplNotifications.OnResponse(response,fpresponse,byDateResponse)
                 local saved = MANAGER.getsetting("MaticzplNotifications",""..save.ID)
                 if saved == nil then
                     notif.saveCache[save.ID] = {}
-                    notif.saveCache[save.ID].ScoreUp = save.ScoreUp
-                    notif.saveCache[save.ID].ScoreDown = save.ScoreDown
-                    notif.saveCache[save.ID].Comments = save.Comments    
-                    notif.saveCache[save.ID].FP = isFP
-                    cached = notif.saveCache[save.ID]                
+                    notif.saveCache[save.ID].ScoreUp = 0--save.ScoreUp
+                    notif.saveCache[save.ID].ScoreDown = 0--save.ScoreDown
+                    notif.saveCache[save.ID].Comments = 0--save.Comments    
+                    notif.saveCache[save.ID].FP = 0--isFP
+                    notif.saveCache[save.ID].ID = save.ID
+                    cached = notif.saveCache[save.ID]       
+                    MANAGER.savesetting("MaticzplNotifications",id,notif.SaveToString(save))            
                 else
                     local saved = split(saved,"|")
                     notif.saveCache[save.ID] = {}
+                    notif.saveCache[save.ID].ID = save.ID
                     notif.saveCache[save.ID].ScoreUp = saved[2]
                     notif.saveCache[save.ID].ScoreDown = saved[3]
                     notif.saveCache[save.ID].Comments = saved[4]
@@ -330,6 +355,12 @@ end
 function MaticzplNotifications.SaveToString(save)
     local separator = "|"
     
+    if save.ID == nil then
+        for k, v in pairs(save) do
+            print(k," - ",v)
+        end
+    end
+
     return save.ID..separator..save.ScoreUp..separator..save.ScoreDown..separator..save.Comments..separator..save.FP
 end
 
@@ -358,7 +389,7 @@ function MaticzplNotifications.Scroll(x,y,d)
     d = d / math.abs(d) --clamp to 1 / -1
     
     --In window
-    if x > 418 and y > 250 and x < 418 + 193 and y < 250 + 156 and notif.windowOpen then
+    if x > 418 and y > 250 and x < 418 + 193 and y < 250 + 155 and notif.windowOpen then
         notif.scrolled = notif.scrolled + d
         return false
     end
