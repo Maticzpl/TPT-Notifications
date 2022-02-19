@@ -270,15 +270,15 @@ function MaticzplNotifications.OnResponse(response,fpresponse,byDateResponse)
                 end            
             end
             local new = save.ScoreUp - cached.ScoreUp
-            if new ~= 0 then
+            if new > 0 then
                 notif.AddNotification(new.." new Upvotes!\x0F\1\255\1\238\129\139",save.ShortName,save.ID)            
             end
             new = save.ScoreDown - cached.ScoreDown
-            if new ~= 0 then
+            if new > 0 then
                 notif.AddNotification(new.." new Downvotes\br\238\129\138",save.ShortName,save.ID)                
             end
             new = save.Comments - cached.Comments
-            if new ~= 0 then
+            if new > 0 then
                 notif.AddNotification(new.." new Comments",save.ShortName,save.ID)               
             end
         end
@@ -322,6 +322,10 @@ function MaticzplNotifications.DrawNotifications()
     local posY = 415
     if tpt.version.jacob1s_mod ~= nil then
         posX = 584
+    end
+    if tpt.version.modid == 7 then --TPT Ultimata
+        posX = 573
+        posY = 435
     end
     
     local w,h = gfx.textSize(number)
