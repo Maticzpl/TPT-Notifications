@@ -143,6 +143,7 @@ function MaticzplNotifications.DrawMenuContent()
                             break
                         end
                     end
+                    notif.SaveNotifications()
                     
                     sim.loadSave(saveID)
                 end
@@ -247,8 +248,7 @@ function MaticzplNotifications.OnResponse(response,fpresponse,byDateResponse)
                     notif.saveCache[save.ID].Comments = save.Comments    
                     notif.saveCache[save.ID].FP = isFP
                     notif.saveCache[save.ID].ID = save.ID
-                    cached = notif.saveCache[save.ID]       
-                    MANAGER.savesetting("MaticzplNotifications",id,notif.SaveToString(save))            
+                    cached = notif.saveCache[save.ID]              
                 else
                     local saved = split(saved,"|")
                     notif.saveCache[save.ID] = {}
@@ -281,15 +281,13 @@ function MaticzplNotifications.OnResponse(response,fpresponse,byDateResponse)
             if new > 0 then
                 notif.AddNotification(new.." new Comments",save.ShortName,save.ID)               
             end
+            MANAGER.savesetting("MaticzplNotifications",save.ID,notif.SaveToString(save))  
+            notif.saveCache[save.ID] = save
         end
     else
         notif.saveCache = {}
     end
     
-    -- Save new data
-    for i, save in ipairs(saves) do
-        notif.saveCache[save.ID] = save
-    end
     notif.SaveNotifications()
 end
 
@@ -361,12 +359,6 @@ end
 -- Used for saving current state of saves
 function MaticzplNotifications.SaveToString(save)
     local separator = "|"
-    
-    if save.ID == nil then
-        for k, v in pairs(save) do
-            print(k," - ",v)
-        end
-    end
 
     return save.ID..separator..save.ScoreUp..separator..save.ScoreDown..separator..save.Comments..separator..save.FP
 end
