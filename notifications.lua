@@ -242,10 +242,10 @@ function MaticzplNotifications.OnResponse(response,fpresponse,byDateResponse)
                 local saved = MANAGER.getsetting("MaticzplNotifications",""..save.ID)
                 if saved == nil then
                     notif.saveCache[save.ID] = {}
-                    notif.saveCache[save.ID].ScoreUp = 0--save.ScoreUp
-                    notif.saveCache[save.ID].ScoreDown = 0--save.ScoreDown
-                    notif.saveCache[save.ID].Comments = 0--save.Comments    
-                    notif.saveCache[save.ID].FP = 0--isFP
+                    notif.saveCache[save.ID].ScoreUp = save.ScoreUp
+                    notif.saveCache[save.ID].ScoreDown = save.ScoreDown
+                    notif.saveCache[save.ID].Comments = save.Comments    
+                    notif.saveCache[save.ID].FP = isFP
                     notif.saveCache[save.ID].ID = save.ID
                     cached = notif.saveCache[save.ID]       
                     MANAGER.savesetting("MaticzplNotifications",id,notif.SaveToString(save))            
