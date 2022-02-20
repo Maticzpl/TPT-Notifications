@@ -1,5 +1,5 @@
--- Prevent multiple instances of the script running and choose the newer one
-if MaticzplNotifications ~= nil and MaticzplNotifications.version > 1 then
+-- Prevent multiple instances of the script running
+if MaticzplNotifications ~= nil then
     return
 end
 
