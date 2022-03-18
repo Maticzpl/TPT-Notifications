@@ -3,6 +3,10 @@ if MaticzplNotifications ~= nil then
     return
 end
 
+if tpt.version.modid == 6 and MANAGER.getsetting("CRK","notifval") == "0" then -- Disable when notification settings turned off in Cracker100's Mod
+return
+end
+
 MaticzplNotifications = {
     lastTimeChecked = nil,
     request = nil,
@@ -19,7 +23,14 @@ MaticzplNotifications = {
 local json = {}
 local notif = MaticzplNotifications
 local MANAGER = rawget(_G, "MANAGER")    
+local colorR, colorG, colorB, colorA = 148,148,148,200 --Default colours
 
+function getcrackertheme() -- Reserved for Cracker1000's Mod
+	colorR = ar
+	colorG = ag
+	colorB = ab
+	colorA = al
+end --End
 
 --Ik this code is awful but interface from tpt api is very limiting
 local mouseX = 0
@@ -47,26 +58,28 @@ function MaticzplNotifications.DrawMenuContent()
         justClicked = false
         holdingScroll = false
     end
-    
-    
+    --Notification Banner
+	gfx.fillRect(418,238,193,11,colorR, colorG, colorB, colorA)
+	gfx.drawText(480,240,"Notification panel",255,255,255,tonumber(colorA)+50)
+	
     --Window
-    gfx.fillRect(418,250,193,155,   0,0,0)
-    gfx.drawRect(418,250,193,155,   255,255,255)
-    
+    gfx.fillRect(418,250,193,155,0,0,0,200)
+    gfx.drawRect(418,250,193,155,colorR, colorG, colorB, colorA)
+
     --Exit button
     local exitIsHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 250 and mouseY < 250 + 12 and notif.windowOpen
     if exitIsHovering then
-        gfx.fillRect(418,250,12,12, 128,128,128)        
+        gfx.fillRect(418,250,12,12,128,128,128,colorA)      
     end
-    gfx.drawRect(418,250,12,12,     255,255,255)
+    gfx.drawRect(418,250,12,12,colorR, colorG, colorB, colorA)
     gfx.drawText(418+3,250+2,"X")
 
     --Read All button
     local readAllHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 261 and mouseY < 261 + 12 and notif.windowOpen
     if readAllHovering then
-        gfx.fillRect(418,261,12,12, 128,128,128)        
+        gfx.fillRect(418,261,12,12,128,128,128)        
     end
-    gfx.drawRect(418,261,12,12,     255,255,255)
+    gfx.drawRect(418,261,12,12,colorR, colorG, colorB, colorA) 
     gfx.drawText(418+4,261+2,"A")
     
     --Scroll Bar
@@ -88,13 +101,13 @@ function MaticzplNotifications.DrawMenuContent()
     if scrollLimit ~= 0 then      
         local scrollFraction = notif.scrolled / scrollLimit
         local barPos = scrollY + ((250 + 154 - barHeight - scrollY) * scrollFraction) - 1
-        gfx.fillRect(420,barPos,8,barHeight, 128,128,128)    
+        gfx.fillRect(420,barPos,8,barHeight,colorR, colorG, colorB, colorA)
     else
-        gfx.fillRect(420,scrollY - 1,8,155 - 26, 128,128,128)    
+        gfx.fillRect(420,scrollY - 1,8,155 - 26, colorR, colorG, colorB, colorA)  
     end    
     
     --Vertical line
-    gfx.drawLine(418+11,250,418+11,250 + 154)
+    gfx.drawLine(418+11,250,418+11,250 + 154,colorR, colorG, colorB, colorA)
     
     local y = 252 + notif.scrolled * 5
     local lastTitleY = y
@@ -110,7 +123,7 @@ function MaticzplNotifications.DrawMenuContent()
         if prev == nil or prev.title ~= title then
             lastTitleY = y
             if y >= 252 and y <= 250+155 - 10 then         
-                gfx.drawLine(418+12,y - 2,418 + 192,y - 2)     
+                gfx.drawLine(418+12,y - 2,418 + 192,y - 2,colorR,colorG,colorB,colorA)     
                 gfx.drawText(418+15,y,title)
             end
             local sx,sy = gfx.textSize(title)
@@ -152,8 +165,7 @@ function MaticzplNotifications.DrawMenuContent()
         
         scrollLimit = -math.max((y - 250 - 154) / 5 - notif.scrolled, 0) 
     end
-    
-    
+  
     event.register(event.mousedown,click)
     event.register(event.mousemove,hover)
     event.register(event.mouseup,unclick)
@@ -170,9 +182,6 @@ function MaticzplNotifications.DrawMenuContent()
     end    
     justClicked = false
 end
-
-
-
 
 -- Request save data from the server
 -- Called automatically every 10 minutes
@@ -315,7 +324,7 @@ function MaticzplNotifications.DrawNotifications()
     if number > 99 then
         number = "99"
     end
-    
+
     local posX = 572
     local posY = 415
     if tpt.version.jacob1s_mod ~= nil then
@@ -325,7 +334,9 @@ function MaticzplNotifications.DrawNotifications()
         posX = 573
         posY = 435
     end
-    
+	if tpt.version.modid == 6 then --Cracker1000's Mod
+          getcrackertheme()
+    end
     local w,h = gfx.textSize(number)
     
     local nw,nh = gfx.textSize(tpt.get_name())
@@ -553,8 +564,6 @@ function json.parse(str, pos, end_delim)
     end
 end
 --#endregion
-
-
 -- On launch
 notif.lastTimeChecked = MANAGER.getsetting("MaticzplNotifications","lastTime") or 0
 local notifJson = MANAGER.getsetting("MaticzplNotifications","Notifications")
@@ -562,7 +571,6 @@ if notifJson then
     local jsonStr = string.gsub(notifJson,"~","\"")
     notif.notifications = json.parse(jsonStr)  
 end
-
 event.register(event.tick,notif.Tick)
 event.register(event.mousemove,notif.Mouse)
 event.register(event.mousedown,notif.OnClick)
