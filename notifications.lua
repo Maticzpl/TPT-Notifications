@@ -194,8 +194,6 @@ function MaticzplNotifications.CheckForChanges()
         -- By votes
         table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=user%3A"..name))
         table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=30&Count=30&Search_Query=user%3A"..name))
-    else
-        print("You need to be logged in to use the notifications script.")
     end 
 end
 
@@ -217,17 +215,17 @@ function MaticzplNotifications.OnResponse()
     for id, req in ipairs(notif.requests) do
         local res = req:finish()
         
-        local success, found = pcall(json.parse,res  )
+        local success, found = pcall(json.parse,res)
         if not success then
             print("Error while fetching saves from server.")
             return
         end
-        for k, v in pairs(found) do
-            saves[v.ID] = v
+        for k, v in pairs(found.Saves) do
+            saves[v.ID] = v            
         end
 
         if id == 1 then
-            for k, v in pairs(found) do
+            for k, v in pairs(found.Saves) do
                 fp[v.ID] = v
             end            
         end
@@ -575,3 +573,8 @@ event.register(event.tick,notif.Tick)
 event.register(event.mousemove,notif.Mouse)
 event.register(event.mousedown,notif.OnClick)
 event.register(event.mousewheel,notif.Scroll)
+
+local name = tpt.get_name()
+if name == "" then          
+    print("You need to be logged in to use the notifications script.")
+end
