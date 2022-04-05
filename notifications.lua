@@ -182,12 +182,12 @@ function MaticzplNotifications.DrawMenuContent()
 end
 
 -- Request save data from the server
--- Called automatically every 10 minutes
+-- Called automatically every 5 minutes
 function MaticzplNotifications.CheckForChanges()
     local name = tpt.get_name()
     if name ~= "" then          
         -- FP
-        table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=16"))
+        table.insert(notif.requests,http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=16&Search_Query=sort%3Adate user%3A"..name))
         -- By date
         table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=sort%3Adate user%3A"..name))
         table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=30&Count=30&Search_Query=sort%3Adate user%3A"..name))
@@ -403,7 +403,7 @@ end
 function MaticzplNotifications.Tick()
     local time = os.time(os.date("!*t"))
     
-    if time - notif.lastTimeChecked > (3 * 60) then
+    if time - notif.lastTimeChecked > (5 * 60) then
         notif.lastTimeChecked = time
         
         notif.CheckForChanges()
