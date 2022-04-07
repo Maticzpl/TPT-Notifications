@@ -9,6 +9,7 @@ end
 
 MaticzplNotifications = {
     lastTimeChecked = nil,
+    fpCompare = nil,
     requests = {},
     saveCache = {},
     notifications = {},
@@ -187,7 +188,7 @@ function MaticzplNotifications.CheckForChanges()
     local name = tpt.get_name()
     if name ~= "" then          
         -- FP
-        table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=16"))
+        notif.fpCompare = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=16");
         -- By date
         table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=sort%3Adate user%3A"..name))
         table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=30&Count=30&Search_Query=sort%3Adate user%3A"..name))
@@ -211,7 +212,6 @@ function MaticzplNotifications.OnResponse()
     end
     
     local saves = {}
-    local fp = {}
     for id, req in ipairs(notif.requests) do
         local res = req:finish()
         
@@ -223,19 +223,19 @@ function MaticzplNotifications.OnResponse()
         for k, v in pairs(found.Saves) do
             saves[v.ID] = v            
         end
-
-        if id == 1 then
-            for k, v in pairs(found.Saves) do
-                fp[v.ID] = v
-            end            
-        end
     end
-    
-    
+
+    local success, fpsaves = pcall(json.parse,notif.fpCompare:finish())
+    if not success then
+        print("Error while fetching FP from server.")
+        return
+    end
+    fpsaves = fpsaves.Saves
+
     if notif.saveCache ~= nil then
         for id, save in pairs(saves) do
             local isFP = 0
-            for _, fpSave in pairs(fp) do
+            for _, fpSave in pairs(fpsaves) do
                 if fpSave.ID == save.ID then
                     isFP = 1
                 end
@@ -417,9 +417,10 @@ function MaticzplNotifications.Tick()
         end
     end    
 
-    if allDone then        
+    if allDone and notif.fpCompare ~= nil and notif.fpCompare:status() == "done" then   
         notif.OnResponse()
         notif.requests = {}
+        notif.fpCompare = nil
         MANAGER.savesetting("MaticzplNotifications","lastTime",notif.lastTimeChecked)                    
     end
     
