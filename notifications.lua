@@ -225,7 +225,8 @@ function MaticzplNotifications.OnResponse()
         end
     end
 
-    local success, fpsaves = pcall(json.parse,notif.fpCompare:finish())
+    local fpRes = notif.fpCompare:finish()
+    local success, fpsaves = pcall(json.parse,fpRes)
     if not success then
         print("Error while fetching FP from server.")
         return
