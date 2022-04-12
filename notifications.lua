@@ -25,10 +25,10 @@ local MANAGER = rawget(_G, "MANAGER")
 local colorR, colorG, colorB, colorA = 148,148,148,200 --Default colours
 
 local function getcrackertheme() -- Reserved for Cracker1000's Mod
-	colorR = ar
-	colorG = ag
-	colorB = ab
-	colorA = al
+    colorR = ar
+    colorG = ag
+    colorB = ab
+    colorA = al
 end --End
 
 --Ik this code is awful but interface from tpt api is very limiting
@@ -58,39 +58,39 @@ function MaticzplNotifications.DrawMenuContent()
         holdingScroll = false
     end
     --Notification Banner
-	gfx.fillRect(418,238,193,11,colorR, colorG, colorB, colorA)
-	gfx.drawText(480,240,"Notification panel",255,255,255,tonumber(colorA)+50)
-	
+    gfx.fillRect(418,238,193,11,colorR, colorG, colorB, colorA)
+    gfx.drawText(480,240,"Notification panel",255,255,255,tonumber(colorA)+50)
+    
     --Window
     gfx.fillRect(418,250,193,155,0,0,0,200)
     gfx.drawRect(418,250,193,155,colorR, colorG, colorB, colorA)
-	if #notif.notifications == 0 and notif.windowOpen == true then
-    gfx.drawText(438,257,"No new notification to show",228,228,228,255)
+    if #notif.notifications == 0 and notif.windowOpen == true then
+        gfx.drawText(438,257,"No new notification to show",228,228,228,255)
     end
-
+    
     --Exit button
     local exitIsHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 250 and mouseY < 250 + 12 and notif.windowOpen
     if exitIsHovering then
         gfx.fillRect(418,250,12,12,colorR, colorG, colorB, colorA)
-		gfx.drawText(395,250,"Exit",colorR, colorG, colorB, colorA)
+        gfx.drawText(395,250,"Exit",colorR, colorG, colorB, colorA)
     end
     gfx.drawRect(418,250,12,12,colorR, colorG, colorB, colorA)
     gfx.drawText(418+3,250+2,"X")
-
+    
     --Read All button
     local readAllHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 261 and mouseY < 261 + 12 and notif.windowOpen
     if readAllHovering then
         gfx.fillRect(418,261,12,12,128,128,128)        
-		gfx.drawText(375,261,"Read all",colorR, colorG, colorB, colorA)
+        gfx.drawText(375,261,"Read all",colorR, colorG, colorB, colorA)
     end
     gfx.drawRect(418,261,12,12,colorR, colorG, colorB, colorA) 
     gfx.drawText(418+4,261+2,"A")
-	
-	 --Track user button
+    
+    --Track user button
     local TrackHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 272 and mouseY < 272 + 12 and notif.windowOpen
     if TrackHovering then
         gfx.fillRect(418,272,12,12,128,128,128)        
-		gfx.drawText(361,272,"Follow user",colorR, colorG, colorB, colorA)
+        gfx.drawText(361,272,"Follow user",colorR, colorG, colorB, colorA)
     end
     gfx.drawRect(418,272,12,12,colorR, colorG, colorB, colorA) 
     gfx.drawText(418+4,272+2,"F")
@@ -178,7 +178,7 @@ function MaticzplNotifications.DrawMenuContent()
         
         scrollLimit = -math.max((y - 250 - 154) / 5 - notif.scrolled, 0) 
     end
-  
+    
     event.register(event.mousedown,click)
     event.register(event.mousemove,hover)
     event.register(event.mouseup,unclick)
@@ -193,46 +193,46 @@ function MaticzplNotifications.DrawMenuContent()
         notif.SaveNotifications()
         return false
     end    
-	   if TrackHovering and justClicked then        
+    if TrackHovering and justClicked then        
         notif.windowOpen = false
-		
+        
         local usermenu = Window:new(418,250,193,155)
-		local userbox = Textbox:new(10,10, 140, 20,'', 'Type a username to follow')
-		local disabletrack = Button:new(90,40,60,20,"Disable", "Accept")
-		local doneuser = Button:new(10,40,60,20,"Done", "Accept")
-		local userclose = Button:new(170,2,20,20,"X", "Close.")
-		
-		  local function userwindowgraphics()
-		gfx.fillRect(418,250,193,155,colorR, colorG, colorB, 40) 
-		if MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= "Trackingdisabled" then
-		gfx.drawText(430,320,"Currently following:\n@"..MANAGER.getsetting("MaticzplNotifications","Trackuser"),255, 255, 255,255) 
-		else
-		gfx.drawText(430,320,"Following feature is disabled",255, 55, 55, 255) 
-		end
-		gfx.drawText(430,390,"Make sure the username is correct",255, 255, 255, 255) 
-		end
-		
-		ui.showWindow(usermenu)
-		usermenu:addComponent(userbox)
-		usermenu:addComponent(doneuser)
-		usermenu:addComponent(disabletrack)
-		usermenu:addComponent(userclose)
-		usermenu:onDraw(userwindowgraphics)
-	
-userclose:action(function(sender)
-ui.closeWindow(usermenu)
-end)
-
-disabletrack:action(function(sender)
-MANAGER.savesetting("MaticzplNotifications","Trackuser","Trackingdisabled")
-ui.closeWindow(usermenu)
-end)
-
-doneuser:action(function(sender)
-if userbox:text() ~= "" then
-MANAGER.savesetting("MaticzplNotifications","Trackuser",userbox:text())
-end
-end)
+        local userbox = Textbox:new(10,10, 140, 20,'', 'Type a username to follow')
+        local disabletrack = Button:new(90,40,60,20,"Disable", "Accept")
+        local doneuser = Button:new(10,40,60,20,"Done", "Accept")
+        local userclose = Button:new(170,2,20,20,"X", "Close.")
+        
+        local function userwindowgraphics()
+            gfx.fillRect(418,250,193,155,colorR, colorG, colorB, 40) 
+            if MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= "Trackingdisabled" then
+                gfx.drawText(430,320,"Currently following:\n@"..MANAGER.getsetting("MaticzplNotifications","Trackuser"),255, 255, 255,255) 
+            else
+                gfx.drawText(430,320,"Following feature is disabled",255, 55, 55, 255) 
+            end
+            gfx.drawText(430,390,"Make sure the username is correct",255, 255, 255, 255) 
+        end
+        
+        ui.showWindow(usermenu)
+        usermenu:addComponent(userbox)
+        usermenu:addComponent(doneuser)
+        usermenu:addComponent(disabletrack)
+        usermenu:addComponent(userclose)
+        usermenu:onDraw(userwindowgraphics)
+        
+        userclose:action(function(sender)
+            ui.closeWindow(usermenu)
+        end)
+        
+        disabletrack:action(function(sender)
+            MANAGER.savesetting("MaticzplNotifications","Trackuser","Trackingdisabled")
+            ui.closeWindow(usermenu)
+        end)
+        
+        doneuser:action(function(sender)
+            if userbox:text() ~= "" then
+                MANAGER.savesetting("MaticzplNotifications","Trackuser",userbox:text())
+            end
+        end)
     end    
     justClicked = false
 end
@@ -242,9 +242,9 @@ end
 function MaticzplNotifications.CheckForChanges()
     local name = tpt.get_name()
     if name ~= "" then        
-if MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= nil or MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= "Trackingdisabled" then
-table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=sort%3Adate user%3A"..MANAGER.getsetting("MaticzplNotifications","Trackuser")))
-end
+        if MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= nil or MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= "Trackingdisabled" then
+            table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=sort%3Adate user%3A"..MANAGER.getsetting("MaticzplNotifications","Trackuser")))
+        end
         -- FP
         notif.fpCompare = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=16");
         -- By date
@@ -282,7 +282,7 @@ function MaticzplNotifications.OnResponse()
             saves[v.ID] = v            
         end
     end
-
+    
     local fpRes = notif.fpCompare:finish()
     local success, fpsaves = pcall(json.parse,fpRes)
     if not success then
@@ -290,7 +290,7 @@ function MaticzplNotifications.OnResponse()
         return
     end
     fpsaves = fpsaves.Saves
-
+    
     if notif.saveCache ~= nil then
         for id, save in pairs(saves) do
             local isFP = 0
@@ -378,7 +378,7 @@ function MaticzplNotifications.DrawNotifications()
     if number > 99 then
         number = "99"
     end
-
+    
     local posX = 572
     local posY = 415
     if tpt.version.jacob1s_mod ~= nil then
@@ -388,8 +388,8 @@ function MaticzplNotifications.DrawNotifications()
         posX = 573
         posY = 435
     end
-	if tpt.version.modid == 6 then --Cracker1000's Mod
-          getcrackertheme()
+    if tpt.version.modid == 6 then --Cracker1000's Mod
+        getcrackertheme()
     end
     local w,h = gfx.textSize(number)
     
@@ -398,7 +398,7 @@ function MaticzplNotifications.DrawNotifications()
     if nw > 58 then
         gfx.fillRect(507,409,72,13,0,0,0,150)            
     end
-
+    
     if number == 0 then
         gfx.fillCircle(posX,posY,5,5,50,50,50)
         gfx.fillCircle(posX,posY,4,4,60,60,60)
@@ -425,7 +425,7 @@ end
 -- Used for saving current state of saves
 function MaticzplNotifications.SaveToString(save)
     local separator = "|"
-
+    
     return save.ID..separator..save.ScoreUp..separator..save.ScoreDown..separator..save.Comments..separator..save.FP
 end
 
@@ -475,7 +475,7 @@ function MaticzplNotifications.Tick()
             break
         end
     end    
-
+    
     if allDone and notif.fpCompare ~= nil and notif.fpCompare:status() == "done" then   
         notif.OnResponse()
         notif.requests = {}
