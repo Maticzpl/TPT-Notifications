@@ -6,7 +6,7 @@ end
 if tpt.version.modid == 6 and MANAGER.getsetting("CRK","notifval") == "0" then -- Disable when notification settings turned off in Cracker1000's Mod
     return
 end
-notificationscriptvcheck()
+
 MaticzplNotifications = {
     lastTimeChecked = nil,
     fpCompare = nil,
@@ -64,6 +64,9 @@ function MaticzplNotifications.DrawMenuContent()
     --Window
     gfx.fillRect(418,250,193,155,0,0,0,200)
     gfx.drawRect(418,250,193,155,colorR, colorG, colorB, colorA)
+	if #notif.notifications == 0 and notif.windowOpen == true then
+    gfx.drawText(438,257,"No new notification to show",228,228,228,255)
+    end
 
     --Exit button
     local exitIsHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 250 and mouseY < 250 + 12 and notif.windowOpen
@@ -87,10 +90,10 @@ function MaticzplNotifications.DrawMenuContent()
     local TrackHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 272 and mouseY < 272 + 12 and notif.windowOpen
     if TrackHovering then
         gfx.fillRect(418,272,12,12,128,128,128)        
-		gfx.drawText(365,272,"Track User",colorR, colorG, colorB, colorA)
+		gfx.drawText(361,272,"Follow user",colorR, colorG, colorB, colorA)
     end
     gfx.drawRect(418,272,12,12,colorR, colorG, colorB, colorA) 
-    gfx.drawText(418+4,272+2,"T")
+    gfx.drawText(418+4,272+2,"F")
     
     --Scroll Bar
     local scrollY = 286
@@ -192,16 +195,29 @@ function MaticzplNotifications.DrawMenuContent()
     end    
 	   if TrackHovering and justClicked then        
         notif.windowOpen = false
+		
         local usermenu = Window:new(418,250,193,155)
-		local userbox = Textbox:new(10,10, 100, 20,'', 'User to track')
-		local disabletrack = Button:new(50,40,50,20,"Disable", "Accept")
-		local doneuser = Button:new(10,40,30,20,"Done", "Accept")
-		local userclose = Button:new(168,2,20,20,"X", "Close.")
+		local userbox = Textbox:new(10,10, 140, 20,'', 'Type a username to follow')
+		local disabletrack = Button:new(90,40,60,20,"Disable", "Accept")
+		local doneuser = Button:new(10,40,60,20,"Done", "Accept")
+		local userclose = Button:new(170,2,20,20,"X", "Close.")
+		
+		  local function userwindowgraphics()
+		gfx.fillRect(418,250,193,155,colorR, colorG, colorB, 40) 
+		if MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= "Trackingdisabled" then
+		gfx.drawText(430,320,"Currently following:\n@"..MANAGER.getsetting("MaticzplNotifications","Trackuser"),255, 255, 255,255) 
+		else
+		gfx.drawText(430,320,"Following feature is disabled",255, 55, 55, 255) 
+		end
+		gfx.drawText(430,390,"Make sure the username is correct",255, 255, 255, 255) 
+		end
+		
 		ui.showWindow(usermenu)
 		usermenu:addComponent(userbox)
 		usermenu:addComponent(doneuser)
 		usermenu:addComponent(disabletrack)
 		usermenu:addComponent(userclose)
+		usermenu:onDraw(userwindowgraphics)
 	
 userclose:action(function(sender)
 ui.closeWindow(usermenu)
@@ -216,7 +232,6 @@ doneuser:action(function(sender)
 if userbox:text() ~= "" then
 MANAGER.savesetting("MaticzplNotifications","Trackuser",userbox:text())
 end
-ui.closeWindow(usermenu)
 end)
     end    
     justClicked = false
@@ -383,6 +398,7 @@ function MaticzplNotifications.DrawNotifications()
     if nw > 58 then
         gfx.fillRect(507,409,72,13,0,0,0,150)            
     end
+
     if number == 0 then
         gfx.fillCircle(posX,posY,5,5,50,50,50)
         gfx.fillCircle(posX,posY,4,4,60,60,60)
@@ -421,14 +437,13 @@ function MaticzplNotifications.Mouse(x,y,dx,dy)
         posX = 585
     end
     
-    notif.hoveringOnButton = math.abs(posX - x) < 5 and math.abs(posY - y) < 5 and #notif.notifications > 0
+    notif.hoveringOnButton = math.abs(posX - x) < 5 and math.abs(posY - y) < 5
 end
 
 function MaticzplNotifications.OnClick(x,y,button)
     if notif.hoveringOnButton then
         notif.scrolled = 0
         notif.windowOpen = true
-        
         notif.DrawMenuContent()
         return false
     end
