@@ -6,7 +6,7 @@ end
 if tpt.version.modid == 6 and MANAGER.getsetting("CRK","notifval") == "0" then -- Disable when notification settings turned off in Cracker1000's Mod
     return
 end
-
+notificationscriptvcheck()
 MaticzplNotifications = {
     lastTimeChecked = nil,
     fpCompare = nil,
@@ -68,7 +68,8 @@ function MaticzplNotifications.DrawMenuContent()
     --Exit button
     local exitIsHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 250 and mouseY < 250 + 12 and notif.windowOpen
     if exitIsHovering then
-        gfx.fillRect(418,250,12,12,128,128,128,colorA)      
+        gfx.fillRect(418,250,12,12,colorR, colorG, colorB, colorA)
+		gfx.drawText(395,250,"Exit",colorR, colorG, colorB, colorA)
     end
     gfx.drawRect(418,250,12,12,colorR, colorG, colorB, colorA)
     gfx.drawText(418+3,250+2,"X")
@@ -77,12 +78,22 @@ function MaticzplNotifications.DrawMenuContent()
     local readAllHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 261 and mouseY < 261 + 12 and notif.windowOpen
     if readAllHovering then
         gfx.fillRect(418,261,12,12,128,128,128)        
+		gfx.drawText(375,261,"Read all",colorR, colorG, colorB, colorA)
     end
     gfx.drawRect(418,261,12,12,colorR, colorG, colorB, colorA) 
     gfx.drawText(418+4,261+2,"A")
+	
+	 --Track user button
+    local TrackHovering = mouseX > 418 and mouseX < 418 + 12 and mouseY > 272 and mouseY < 272 + 12 and notif.windowOpen
+    if TrackHovering then
+        gfx.fillRect(418,272,12,12,128,128,128)        
+		gfx.drawText(365,272,"Track User",colorR, colorG, colorB, colorA)
+    end
+    gfx.drawRect(418,272,12,12,colorR, colorG, colorB, colorA) 
+    gfx.drawText(418+4,272+2,"T")
     
     --Scroll Bar
-    local scrollY = 275
+    local scrollY = 286
     local scrollFieldHeight = 250 + 155 - scrollY
     local barRatio = math.min(1 - (scrollLimit * -5 / 155),1)
     local barHeight = math.max(scrollFieldHeight * barRatio,10)
@@ -179,6 +190,35 @@ function MaticzplNotifications.DrawMenuContent()
         notif.SaveNotifications()
         return false
     end    
+	   if TrackHovering and justClicked then        
+        notif.windowOpen = false
+        local usermenu = Window:new(418,250,193,155)
+		local userbox = Textbox:new(10,10, 100, 20,'', 'User to track')
+		local disabletrack = Button:new(50,40,50,20,"Disable", "Accept")
+		local doneuser = Button:new(10,40,30,20,"Done", "Accept")
+		local userclose = Button:new(168,2,20,20,"X", "Close.")
+		ui.showWindow(usermenu)
+		usermenu:addComponent(userbox)
+		usermenu:addComponent(doneuser)
+		usermenu:addComponent(disabletrack)
+		usermenu:addComponent(userclose)
+	
+userclose:action(function(sender)
+ui.closeWindow(usermenu)
+end)
+
+disabletrack:action(function(sender)
+MANAGER.savesetting("MaticzplNotifications","Trackuser","Trackingdisabled")
+ui.closeWindow(usermenu)
+end)
+
+doneuser:action(function(sender)
+if userbox:text() ~= "" then
+MANAGER.savesetting("MaticzplNotifications","Trackuser",userbox:text())
+end
+ui.closeWindow(usermenu)
+end)
+    end    
     justClicked = false
 end
 
@@ -186,7 +226,10 @@ end
 -- Called automatically every 5 minutes
 function MaticzplNotifications.CheckForChanges()
     local name = tpt.get_name()
-    if name ~= "" then          
+    if name ~= "" then        
+if MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= nil or MANAGER.getsetting("MaticzplNotifications","Trackuser") ~= "Trackingdisabled" then
+table.insert(notif.requests, http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=30&Search_Query=sort%3Adate user%3A"..MANAGER.getsetting("MaticzplNotifications","Trackuser")))
+end
         -- FP
         notif.fpCompare = http.get("https://powdertoy.co.uk/Browse.json?Start=0&Count=16");
         -- By date
