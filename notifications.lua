@@ -290,6 +290,18 @@ function MaticzplNotifications.OnResponse()
                     notif.AddNotification("This save went off FP.",   save.ShortName,save.ID)  
                 end            
             end
+
+            local icons = {
+                "\x0F\1\255\1\238\129\139",
+                "\br\238\129\138"
+            }
+            if tpt.version.jacob1s_mod ~= nil then
+                icons = {
+                    "\x0F\1\255\1\203",
+                    "\br\202"
+                }
+            end
+
             local new = save.ScoreUp - cached.ScoreUp
             if new > 0 then
                 notif.AddNotification(new.." new Upvotes!\x0F\1\255\1\238\129\139",save.ShortName,save.ID)            
