@@ -359,7 +359,7 @@ function MaticzplNotifications.DrawNotifications()
         posX = 573
         posY = 435
     end
-	if tpt.version.modid == 6 then --Cracker1000's Mod
+	if iscrackmod then --Cracker1000's Mod
           getcrackertheme()
     end
     local w,h = gfx.textSize(number)
